@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Tempahan Bilik SK Bagan Tuan Kechil</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+<header class="navbar">
+  <div class="navbar__inner">
+    <ul class="nav__links" id="navLinks">
+      <li><a href="index.html">Tempah Bilik</a></li>
+      <li><a href="admin.html" class="is-active">Admin</a></li>
+      <li><a href="admin-edit.html">Edit Pengguna</a></li>
+    </ul>
+    <button class="nav__toggle" id="navToggle" aria-label="Buka menu">&#9776;</button>
+    <a href="index.html" class="navbar__brand">
+      <div class="brand__text">
+        <strong>SK Bagan Tuan Kechil</strong>
+        <span>Sistem Tempahan Bilik</span>
+      </div>
+      <img src="images/logo.png" alt="Logo SK Bagan Tuan Kechil" class="school-crest">
+    </a>
+  </div>
+</header>
+
+<!-- ===================== log in for admin ===================== -->
+<div class="login-wrap" id="loginView">
+  <div class="login-card">
+    <img src="images/logo.png" alt="Logo SK Bagan Tuan Kechil" class="school-crest">
+    <h1>Log Masuk Admin</h1>
+    <p>Sila log masuk untuk mengurus tempahan bilik.</p>
+    <form id="loginForm">
+      <div class="field">
+        <label for="loginUser">Nama Pengguna</label>
+        <input type="text" id="loginUser" required autocomplete="username">
+      </div>
+      <div class="field">
+        <label for="loginPass">Kata Laluan</label>
+        <input type="password" id="loginPass" required autocomplete="current-password">
+      </div>
+      <div class="login-error" id="loginError">Nama pengguna atau kata laluan salah.</div>
+      <button type="submit" class="btn btn-primary" id="loginBtn" style="margin-top:6px;">Log Masuk</button>
+    </form>
+  </div>
+</div>
+
+<!-- ===================== admin dashboard ===================== -->
+<main class="container" id="dashboardView" style="display:none;">
+
+  <div class="admin-header">
+    <div>
+      <h1>Papan Pemuka Admin</h1>
+      <p>Urus dan semak semua tempahan bilik SK Bagan Tuan Kechil.</p>
+    </div>
+    <button class="btn btn-ghost" id="logoutBtn">Log Keluar</button>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-label">Jumlah Tempahan</div>
+      <div class="stat-value" id="statTotal">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Menunggu Kelulusan</div>
+      <div class="stat-value is-gold" id="statMenunggu">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Diluluskan</div>
+      <div class="stat-value is-accent" id="statLulus">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Bilik Paling Popular</div>
+      <div class="stat-value is-warn" id="statPopular" style="font-size:1.1rem;">—</div>
+    </div>
+  </div>
+
+  <div class="dash-grid">
+    <div class="panel">
+      <h2>Tempahan Mengikut Bilik</h2>
+      <p class="panel-sub">Jumlah tempahan untuk setiap bilik.</p>
+      <div class="chart-wrap"><canvas id="roomChart"></canvas></div>
+    </div>
+    <div class="panel">
+      <h2>Kedudukan Bilik</h2>
+      <p class="panel-sub">Bilik disusun mengikut jumlah tempahan.</p>
+      <div class="room-rank" id="roomRank"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Senarai Tempahan</h2>
+    <p class="panel-sub">Luluskan atau tolak tempahan guru di sini.</p>
+
+    <div class="filter-bar" id="filterBar">
+      <button class="filter-chip is-active" data-filter="semua">Semua</button>
+      <button class="filter-chip" data-filter="Menunggu">Menunggu</button>
+      <button class="filter-chip" data-filter="Diluluskan">Diluluskan</button>
+      <button class="filter-chip" data-filter="Ditolak">Ditolak</button>
+    </div>
+
+    <div class="booking-table-wrap">
+      <table class="booking-table">
+        <thead>
+          <tr>
+            <th>Guru</th>
+            <th>Kelas</th>
+            <th>Bilik</th>
+            <th>Tarikh</th>
+            <th>Waktu</th>
+            <th>Status</th>
+            <th>Tindakan</th>
+          </tr>
+        </thead>
+        <tbody id="bookingTableBody"></tbody>
+      </table>
+    </div>
+    <div class="empty-state" id="emptyState" style="display:none;">Tiada tempahan untuk ditunjukkan.</div>
+  </div>
+
+</main>
+
+<footer>
+  &copy; 2026 SK Bagan Tuan Kechil — Sistem Tempahan Bilik Dalaman
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

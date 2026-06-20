@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Edit Data — Admin SKBTK</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/admin.css">
+</head>
+
+<body>
+
+<header class="navbar">
+  <div class="navbar__inner">
+    <ul class="nav__links" id="navLinks">
+      <li><a href="index.html">Tempah Bilik</a></li>
+      <li><a href="admin.html">Admin</a></li>
+      <li><a href="admin-edit.html" class="is-active">Edit Pengguna</a></li>
+    </ul>
+    <button class="nav__toggle" id="navToggle" aria-label="Buka menu">&#9776;</button>
+    <a href="index.html" class="navbar__brand">
+      <div class="brand__text">
+        <strong>SK Bagan Tuan Kechil</strong>
+        <span>Sistem Tempahan Bilik</span>
+      </div>
+      <img src="images/logo.png" alt="Logo SK Bagan Tuan Kechil" class="school-crest">
+    </a>
+  </div>
+</header>
+
+<main class="container">
+  <section class="hero container">
+  <h2>Senarai Guru & Kelas</h2>
+
+  <div class="dash-grid">
+
+<!-- teachers -->
+<div class="panel">
+  <h2>Senarai Guru</h2>
+
+<div class="field">
+  <div style="display:flex; gap:10px; margin-bottom:10px;">
+    <input id="teacherInput" type="text" placeholder="Tambah guru baru">
+    <button class="btn btn-primary" onclick="addTeacher()">Tambah</button>
+  </div>
+</div>
+
+  <div id="teacherList"></div>
+</div>
+
+<!-- classes -->
+<div class="panel">
+  <h2>Senarai Kelas</h2>
+
+<div class="field">
+  <div style="display:flex; gap:10px; margin-bottom:10px;">
+    <input id="classInput" type="text" placeholder="Tambah kelas baru">
+    <button class="btn btn-primary" onclick="addClass()">Tambah</button>
+  </div>
+</div>
+
+  <div id="classList"></div>
+</div>
+</div>
+
+</main>
+
+<footer>
+  &copy; 2026 SK Bagan Tuan Kechil — Sistem Tempahan Bilik Dalaman
+</footer>
+
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script src="js/admin-edit.js"></script>
+
+</body>
+</html>
