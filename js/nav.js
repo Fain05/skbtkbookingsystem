@@ -9,4 +9,11 @@ document.addEventListener("DOMContentLoaded", () => {
   links.querySelectorAll("a").forEach(a =>
     a.addEventListener("click", () => links.classList.remove("is-open"))
   );
+
+  document.addEventListener("DOMContentLoaded", () => {
+  const year = document.getElementById("currentYear");
+  if (year) {
+    year.textContent = new Date().getFullYear();
+  }
+});
 });
