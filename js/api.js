@@ -16,8 +16,11 @@ const Api = {
         bookings: []
       };
     }
+
     const res = await fetch(`${CONFIG.APPS_SCRIPT_URL}?action=data`);
+
     if (!res.ok) throw new Error("Gagal hubungi pelayan.");
+
     return res.json();
   },
 
@@ -28,12 +31,20 @@ const Api = {
         "Sistem belum disambungkan ke Google Sheet. Sila tampal URL Apps Script dalam js/config.js"
       );
     }
+
     const res = await fetch(CONFIG.APPS_SCRIPT_URL, {
       method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({ action, ...payload })
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: JSON.stringify({
+        action,
+        ...payload
+      })
     });
+
     if (!res.ok) throw new Error("Gagal hubungi pelayan.");
+
     return res.json();
   },
 
@@ -47,5 +58,9 @@ const Api = {
 
   async updateStatus(id, status) {
     return this.post("updateStatus", { id, status });
+  },
+
+  async deleteBooking(id) {
+    return this.post("deleteBooking", { id });
   }
 };
