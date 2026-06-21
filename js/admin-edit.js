@@ -73,6 +73,10 @@ function addTeacher() {
 }
 
 function deleteTeacher(index) {
+  const confirmDelete = confirm("Adakah anda pasti mahu padam nama guru ini?");
+
+  if (!confirmDelete) return;
+
   teachers.splice(index, 1);
   renderTeachers();
   saveTeachers();
@@ -110,6 +114,10 @@ function addClass() {
 }
 
 function deleteClass(index) {
+  const confirmDelete = confirm("Adakah anda pasti mahu padam kelas ini?");
+
+  if (!confirmDelete) return;
+
   classes.splice(index, 1);
   renderClasses();
   saveClasses();
