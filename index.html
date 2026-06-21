@@ -3,21 +3,36 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=1200">
-<title>Admin — Tempahan Bilik SK Bagan Tuan Kechil</title>
+<title>Tempahan Bilik — SK Bagan Tuan Kechil</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
-<link rel="stylesheet" href="css/admin.css">
 </head>
 <body>
 
+  <div id="delayWarning" class="overlay">
+  <div class="modal notice-style">
+    <h2>Notis Sistem</h2>
+    <p>
+      Sistem ini mungkin mempunyai sedikit kelewatan kerana menggunakan Google Sheets sebagai database.
+      Sila tunggu sebentar selepas membuat sebarang tindakan dan navigasi dengan berhati-hati :)
+    </p>
+
+    <button type="button" onclick="closeDelayWarning()" class="btn btn-primary">
+      Faham
+    </button>
+  </div>
+</div>
+
+  <!-- navigation bars -->
 <header class="navbar">
   <div class="navbar__inner">
     <ul class="nav__links" id="navLinks">
-      <li><a href="index.html">Tempah Bilik</a></li>
-      <li><a href="admin.html" class="is-active">Admin</a></li>
-      <li><a href="admin-edit.html">Edit Pengguna</a></li>
+      <li><a href="#tempah-bilik" class="is-active">Tempah Bilik</a></li>
+      <li><a href="#senarai-bilik">Bilik Disediakan</a></li>
+      <li><a href="booking.html">Senarai Tempahan</a></li>
+      <li><a href="admin.html">Admin</a></li>
     </ul>
     <button class="nav__toggle" id="navToggle" aria-label="Buka menu">&#9776;</button>
     <a href="index.html" class="navbar__brand">
@@ -30,110 +45,133 @@
   </div>
 </header>
 
-<!-- ===================== log in for admin ===================== -->
-<div class="login-wrap" id="loginView">
-  <div class="login-card">
-    <img src="images/logo.png" alt="Logo SK Bagan Tuan Kechil" class="school-crest">
-    <h1>Log Masuk Admin</h1>
-    <p>Sila log masuk untuk mengurus tempahan bilik.</p>
-    <form id="loginForm">
-      <div class="field">
-        <label for="loginUser">Nama Pengguna</label>
-        <input type="text" id="loginUser" required autocomplete="username">
+<main>
+  <section class="hero container">
+    <span class="hero__eyebrow">SK Bagan Tuan Kechil · Tempahan Bilik ICT</span>
+    <h1><span id="typingText"></span></h1>
+    <p>Pilih bilik, tarikh dan waktu yang anda perlukan. Tempahan akan disemak secara automatik supaya tiada pertindihan waktu, dan menunggu kelulusan pentadbir.</p>
+    <div class="hero__cta">
+      <a href="#tempah-bilik" class="btn btn-primary">Tempah Sekarang</a>
+      <a href="#senarai-bilik" class="btn btn-ghost">Lihat Bilik Disediakan</a>
+    </div>
+  </section>
+
+  <section class="container" id="senarai-bilik">
+    <div class="rooms" id="roomCards">
+      <!-- use javascript here -->
+    </div>
+  </section>
+
+  <section class="booking-section container" id="tempah-bilik">
+    <div class="section-title">
+      <span class="tag">Borang</span>
+      <h2>Isi Borang Tempahan</h2>
+    </div>
+
+    <form class="form-card" id="bookingForm" autocomplete="off">
+      <div class="field-grid">
+
+        <div class="field field--full">
+          <label for="namaGuru">Nama Guru</label>
+          <input type="text" id="namaGuru" list="teacherList" placeholder="Taip atau pilih nama anda" required>
+          <datalist id="teacherList"></datalist>
+        </div>
+
+        <div class="field">
+          <label for="kelas">Kelas</label>
+          <select id="kelas" required>
+            <option value="" disabled selected>Pilih kelas</option>
+          </select>
+        </div>
+
+        <div class="field" id="kelasLainWrap" style="display:none;">
+          <label for="kelasLain">Nyatakan Kelas</label>
+          <input type="text" id="kelasLain" placeholder="Contoh: Tahun 6 Gemilang">
+        </div>
+
+        <div class="field">
+          <label for="tarikh">Tarikh</label>
+          <input type="date" id="tarikh" required>
+        </div>
+
+        <div class="field field--full">
+          <label>Pilih Bilik</label>
+          <div class="room-pick" id="roomPick"></div>
+        </div>
+
+        <div class="field field--full">
+          <label>Pilih Masa (Waktu)</label>
+          <div class="timetable" id="timetable"></div>
+        </div>
+
       </div>
-      <div class="field">
-        <label for="loginPass">Kata Laluan</label>
-        <input type="password" id="loginPass" required autocomplete="current-password">
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" id="submitBtn">Hantar Tempahan</button>
+        <span class="hint">Tempahan akan disemak terlebih dahulu sebelum disahkan.</span>
       </div>
-      <div class="login-error" id="loginError">Nama pengguna atau kata laluan salah.</div>
-      <button type="submit" class="btn btn-primary" id="loginBtn" style="margin-top:6px;">Log Masuk</button>
+
+      <div class="connection-note" id="connectionNote" style="display:none;">
+        Sistem belum disambungkan ke Google Sheet lagi. Borang ini hanya demo — sila lihat README.md untuk sambungkan pangkalan data.
+      </div>
     </form>
-  </div>
-</div>
-
-<!-- ===================== admin dashboard ===================== -->
-<main class="container" id="dashboardView" style="display:none;">
-
-  <div class="admin-header">
-    <div>
-      <h1>Papan Pemuka Admin</h1>
-      <p>Urus dan semak semua tempahan bilik SK Bagan Tuan Kechil.</p>
-    </div>
-    <button class="btn btn-ghost" id="logoutBtn" style="background:#dc2626; color:white; border:none;">Log Keluar</button>
-  </div>
-
-  <div class="stat-grid">
-    <div class="stat-card">
-      <div class="stat-label">Jumlah Tempahan</div>
-      <div class="stat-value" id="statTotal">0</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Menunggu Kelulusan</div>
-      <div class="stat-value is-gold" id="statMenunggu">0</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Diluluskan</div>
-      <div class="stat-value is-accent" id="statLulus">0</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Bilik Paling Popular</div>
-      <div class="stat-value is-warn" id="statPopular" style="font-size:1.1rem;">—</div>
-    </div>
-  </div>
-
-  <div class="dash-grid">
-    <div class="panel">
-      <h2>Tempahan Mengikut Bilik</h2>
-      <p class="panel-sub">Jumlah tempahan untuk setiap bilik.</p>
-      <div class="chart-wrap"><canvas id="roomChart"></canvas></div>
-    </div>
-    <div class="panel">
-      <h2>Kedudukan Bilik</h2>
-      <p class="panel-sub">Bilik disusun mengikut jumlah tempahan.</p>
-      <div class="room-rank" id="roomRank"></div>
-    </div>
-  </div>
-
-  <div class="panel">
-    <h2>Senarai Tempahan</h2>
-    <p class="panel-sub">Luluskan atau tolak tempahan guru di sini.</p>
-
-    <div class="filter-bar" id="filterBar">
-      <button class="filter-chip is-active" data-filter="semua">Semua</button>
-      <button class="filter-chip" data-filter="Menunggu">Menunggu</button>
-      <button class="filter-chip" data-filter="Diluluskan">Diluluskan</button>
-      <button class="filter-chip" data-filter="Ditolak">Ditolak</button>
-    </div>
-
-    <div class="booking-table-wrap">
-      <table class="booking-table">
-        <thead>
-          <tr>
-            <th>Guru</th>
-            <th>Kelas</th>
-            <th>Bilik</th>
-            <th>Tarikh</th>
-            <th>Waktu</th>
-            <th>Status</th>
-            <th>Tindakan</th>
-          </tr>
-        </thead>
-        <tbody id="bookingTableBody"></tbody>
-      </table>
-    </div>
-    <div class="empty-state" id="emptyState" style="display:none;">Tiada tempahan untuk ditunjukkan.</div>
-  </div>
-
+  </section>
 </main>
 
 <footer>
   &copy; 2026 SK Bagan Tuan Kechil — Sistem Tempahan Bilik ICT
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<!-- ===================== confirm booking popup ===================== -->
+<div class="overlay" id="modalConfirm">
+  <div class="modal modal--confirm">
+    <div class="modal__icon">&#128197;</div>
+    <h3>Sahkan Tempahan?</h3>
+    <p>Sila semak butiran tempahan anda sebelum menghantar.</p>
+    <div class="modal__summary">
+      <div><dt>Nama Guru</dt><dd id="sumGuru">—</dd></div>
+      <div><dt>Kelas</dt><dd id="sumKelas">—</dd></div>
+      <div><dt>Bilik</dt><dd id="sumBilik">—</dd></div>
+      <div><dt>Tarikh</dt><dd id="sumTarikh">—</dd></div>
+      <div><dt>Waktu</dt><dd id="sumMasa">—</dd></div>
+    </div>
+    <div class="modal__actions">
+      <button class="btn btn-ghost" id="btnBatal">Batal</button>
+      <button class="btn btn-primary" id="btnSahkan">Sahkan Tempahan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== booking warning popup ===================== -->
+<div class="overlay" id="modalWarn">
+  <div class="modal modal--warn">
+    <div class="modal__icon">&#9888;&#65039;</div>
+    <h3>Bilik Telah Ditempah</h3>
+    <p id="warnMessage">Bilik ini sudah ditempah pada tarikh dan waktu yang sama. Sila pilih waktu atau bilik lain.</p>
+    <div class="modal__actions">
+      <button class="btn btn-ghost" id="btnWarnTutup" style="flex:1;">Faham</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== successful booking popup ===================== -->
+<div class="overlay" id="modalSuccess">
+  <div class="modal modal--success">
+    <div class="modal__icon">&#9989;</div>
+    <h3>Tempahan Berjaya!</h3>
+    <p>Tempahan anda telah dihantar dan kini menunggu kelulusan pentadbir.</p>
+    <div class="modal__actions">
+      <button class="btn btn-accent" id="btnSuccessTutup" style="flex:1;">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<!-- javascript link -->
+ <script src="js/notice.js"></script>
+ <script src="js/animation.js"></script>
 <script src="js/config.js"></script>
 <script src="js/api.js"></script>
 <script src="js/nav.js"></script>
-<script src="js/admin.js"></script>
+<script src="js/booking.js"></script>
 </body>
 </html>
