@@ -2,6 +2,7 @@
    admin panel logic — admin.html
    ==================================================================== */
 
+
 const SESSION_KEY = "skbtk_admin_session";
 
 let allBookings = [];
@@ -42,7 +43,6 @@ function wireLogin() {
         const res = await Api.login(username, password);
         ok = !!res.success;
       } else {
-        // Mod demo — tiada Apps Script disambungkan lagi.
         ok = username === CONFIG.ADMIN_USERNAME && password === CONFIG.ADMIN_DEMO_PASSWORD;
       }
 
@@ -87,7 +87,7 @@ function showDashboard() {
 async function loadDashboard() {
   try {
     const data = await Api.getData();
-    allBookings = data.bookings || [];
+    allBookings = groupBookings(data.bookings || []);
   } catch (err) {
     console.warn("Gagal muat tempahan:", err.message);
     allBookings = [];
@@ -199,13 +199,57 @@ function wireFilters() {
     renderTable();
   });
 
-  document.getElementById("bookingTableBody").addEventListener("click", e => {
-    const btn = e.target.closest("button[data-action]");
-    if (!btn) return;
-    const id = btn.dataset.id;
-    const action = btn.dataset.action;
-    handleStatusChange(id, action === "approve" ? "Diluluskan" : "Ditolak", btn);
+document.getElementById("bookingTableBody").addEventListener("click", e => {
+  const btn = e.target.closest("button[data-action]");
+  if (!btn) return;
+
+  const id = btn.dataset.id;
+  const action = btn.dataset.action;
+
+  if (action === "approve") {
+    handleStatusChange(id, "Diluluskan", btn);
+  }
+
+  if (action === "reject") {
+    handleStatusChange(id, "Ditolak", btn);
+  }
+
+  if (action === "delete") {
+    handleDeleteBooking(id);
+  }
+});
+}
+
+function groupBookings(data) {
+  const grouped = {};
+
+  data.forEach(b => {
+    const id = b.id;
+
+    if (!grouped[id]) {
+      grouped[id] = {
+        id: b.id,
+        namaGuru: b.namaGuru,
+        kelas: b.kelas,
+        bilikId: b.bilikId,
+        bilikNama: b.bilikNama,
+        tarikh: b.tarikh,
+        tarikhMohon: b.tarikhMohon,
+        status: b.status,
+        slots: []
+      };
+    }
+
+    grouped[id].slots.push(b.masa);
+
+    // priority status (so admin sees worst state correctly)
+    if (b.status === "Menunggu") grouped[id].status = "Menunggu";
+    if (b.status === "Ditolak" && grouped[id].status !== "Menunggu") {
+      grouped[id].status = "Ditolak";
+    }
   });
+
+  return Object.values(grouped);
 }
 
 function renderTable() {
@@ -214,7 +258,9 @@ function renderTable() {
 
   let rows = [...allBookings];
   if (activeFilter !== "semua") rows = rows.filter(b => b.status === activeFilter);
-  rows.sort((a, b) => (a.tarikh < b.tarikh ? 1 : -1));
+  rows.sort((a, b) => {
+  return new Date(b.tarikhMohon) - new Date(a.tarikhMohon);
+});
 
   if (!rows.length) {
     tbody.innerHTML = "";
@@ -229,7 +275,7 @@ function renderTable() {
       <td>${escapeHtml(b.kelas)}</td>
       <td>${escapeHtml(b.bilikNama || b.bilikId)}</td>
       <td>${escapeHtml(b.tarikh)}</td>
-      <td>${escapeHtml(b.masa)}</td>
+      <td>${b.slots.join(", ")}</td>
       <td>${statusPill(b.status)}</td>
       <td>${rowActions(b)}</td>
     </tr>
@@ -247,11 +293,16 @@ function statusPill(status) {
 }
 
 function rowActions(b) {
-  if (b.status !== "Menunggu") return "—";
   return `
     <div class="row-actions">
-      <button class="btn-icon approve" data-action="approve" data-id="${b.id}">Luluskan</button>
-      <button class="btn-icon reject" data-action="reject" data-id="${b.id}">Tolak</button>
+      ${b.status === "Menunggu" ? `
+        <button class="btn-icon approve" data-action="approve" data-id="${b.id}">Luluskan</button>
+        <button class="btn-icon reject" data-action="reject" data-id="${b.id}">Tolak</button>
+      ` : ""}
+
+      <button class="btn-icon delete" data-action="delete" data-id="${b.id}">
+        Padam
+      </button>
     </div>
   `;
 }
@@ -273,6 +324,33 @@ async function handleStatusChange(id, status, btn) {
     btn.disabled = false;
     btn.textContent = original;
   }
+}
+
+async function handleDeleteBooking(id) {
+
+  const confirmDelete = confirm(
+    "Adakah anda pasti ingin memadam tempahan ini?"
+  );
+
+  if (!confirmDelete) return;
+
+  try {
+
+    await Api.deleteBooking(id);
+
+    allBookings = allBookings.filter(
+      b => String(b.id) !== String(id)
+    );
+
+    renderStats();
+    renderChart();
+    renderRoomRank();
+    renderTable();
+
+  } catch (err) {
+    alert(err.message || "Gagal memadam tempahan.");
+  }
+
 }
 
 function escapeHtml(str) {
