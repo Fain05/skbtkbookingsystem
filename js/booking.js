@@ -16,7 +16,7 @@ const ROOM_DESC = {
 
 let pendingBooking = null;
 
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", () => {
   renderRoomCards();
   renderRoomPick();
   renderTimetable();
@@ -24,19 +24,27 @@ document.addEventListener("DOMContentLoaded", async () => {
   wireModals();
   wireForm();
 
+  document.getElementById("tarikh").addEventListener("change", loadBookedSlots);
+
+  document.querySelectorAll('input[name="bilik"]').forEach(radio => {
+    radio.addEventListener("change", loadBookedSlots);
+  });
+
   if (!Api.isConnected()) {
     document.getElementById("connectionNote").style.display = "block";
   }
 
-  try {
-    const data = await Api.getData();
-    populateTeachers(data.teachers && data.teachers.length ? data.teachers : CONFIG.FALLBACK_TEACHERS);
-    populateClasses(data.classes && data.classes.length ? data.classes : CONFIG.FALLBACK_CLASSES);
-  } catch (err) {
-    console.warn("Guna senarai sandaran:", err.message);
-    populateTeachers(CONFIG.FALLBACK_TEACHERS);
-    populateClasses(CONFIG.FALLBACK_CLASSES);
-  }
+  populateTeachers(CONFIG.FALLBACK_TEACHERS);
+  populateClasses(CONFIG.FALLBACK_CLASSES);
+
+  Api.getData()
+    .then(data => {
+      populateTeachers(data.teachers?.length ? data.teachers : CONFIG.FALLBACK_TEACHERS);
+      populateClasses(data.classes?.length ? data.classes : CONFIG.FALLBACK_CLASSES);
+    })
+    .catch(err => {
+      console.warn("Guna senarai sandaran:", err.message);
+    });
 });
 
 function renderRoomCards() {
@@ -69,10 +77,54 @@ function renderRoomPick() {
 
 function renderTimetable() {
   const wrap = document.getElementById("timetable");
+
   wrap.innerHTML = CONFIG.TIME_SLOTS.map((slot, i) => `
-    <input type="radio" name="masa" id="masa-${i}" value="${slot}" required>
-    <label for="masa-${i}" data-period="W${i + 1}">${slot}</label>
+    <input
+      type="checkbox"
+      name="masa"
+      id="masa-${i}"
+      value="${slot}"
+    >
+
+    <label
+      for="masa-${i}"
+      data-period="W${i + 1}"
+    >
+      ${slot}
+    </label>
   `).join("");
+}
+
+async function loadBookedSlots() {
+  const bilik = document.querySelector('input[name="bilik"]:checked')?.value;
+  const tarikh = document.getElementById("tarikh").value;
+
+  if (!bilik || !tarikh) return;
+
+  const res = await fetch(
+    `${CONFIG.APPS_SCRIPT_URL}?action=slots&bilikId=${bilik}&tarikh=${tarikh}`
+  );
+
+  const data = await res.json();
+
+  document.querySelectorAll('input[name="masa"]').forEach(input => {
+    const label = document.querySelector(`label[for="${input.id}"]`);
+    const slot = input.value;
+
+    const booked = data.find(x => x.masa === slot);
+
+    if (booked) {
+      input.disabled = true;
+      input.checked = false;
+
+      label.classList.add("locked");
+      label.setAttribute("title", `Ditempah oleh: ${booked.nama}`);
+    } else {
+      input.disabled = false;
+      label.classList.remove("locked");
+      label.removeAttribute("title");
+    }
+  });
 }
 
 function setMinDate() {
@@ -123,10 +175,11 @@ function wireForm() {
     const kelasLain = document.getElementById("kelasLain").value.trim();
     const kelas = kelasSelect === "Lain-lain" ? kelasLain : kelasSelect;
     const bilikInput = document.querySelector('input[name="bilik"]:checked');
-    const masaInput = document.querySelector('input[name="masa"]:checked');
+    const masaInputs = document.querySelectorAll('input[name="masa"]:checked');
+    const selectedSlots = [...masaInputs].map(m => m.value);
     const tarikh = document.getElementById("tarikh").value;
 
-    if (!namaGuru || !kelas || !bilikInput || !masaInput || !tarikh) {
+    if (!namaGuru ||!kelas ||!bilikInput ||masaInputs.length === 0 ||!tarikh) {
       alert("Sila lengkapkan semua maklumat sebelum menghantar.");
       return;
     }
@@ -139,14 +192,14 @@ function wireForm() {
       bilikId: room.id,
       bilikNama: room.nama,
       tarikh,
-      masa: masaInput.value
+      masa: selectedSlots
     };
 
     document.getElementById("sumGuru").textContent = namaGuru;
     document.getElementById("sumKelas").textContent = kelas;
     document.getElementById("sumBilik").textContent = room.nama;
     document.getElementById("sumTarikh").textContent = formatTarikh(tarikh);
-    document.getElementById("sumMasa").textContent = masaInput.value;
+    document.getElementById("sumMasa").textContent =selectedSlots.join(", ");
 
     openOverlay("modalConfirm");
   });
