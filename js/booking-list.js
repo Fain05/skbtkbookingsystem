@@ -9,11 +9,69 @@ document.addEventListener("DOMContentLoaded", async () => {
 async function loadBookings() {
   try {
     const data = await Api.getData();
-    renderBookingList(data.bookings || []);
+    renderBookingList(groupBookings(data.bookings || []));
   } catch (err) {
     console.log("Error loading bookings:", err);
     renderBookingList([]);
   }
+}
+
+/* ================= GROUP BOOKINGS ================= */
+
+function groupBookings(data) {
+  const grouped = {};
+
+  data.forEach(b => {
+    const id = b.id;
+
+   if (!grouped[id]) {
+      grouped[id] = {
+        id: b.id,
+        namaGuru: b.namaGuru,
+        kelas: b.kelas,
+        bilikNama: b.bilikNama,
+        tarikh: b.tarikh,
+        tarikhMohon: b.tarikhMohon, // ✅ IMPORTANT
+        status: b.status,
+        slots: []
+      };
+    }
+
+    grouped[id].slots.push(b.masa);
+
+    // status priority logic
+    if (b.status === "Menunggu") grouped[id].status = "Menunggu";
+    if (b.status === "Ditolak" && grouped[id].status !== "Menunggu") {
+      grouped[id].status = "Ditolak";
+    }
+  });
+
+  return Object.values(grouped);
+}
+
+/* ================= PARSE GOOGLE SHEETS DATETIME ================= */
+
+function parseDateTime(str) {
+  if (!str) return new Date(0);
+
+  // already JS date format
+  if (!isNaN(Date.parse(str))) {
+    return new Date(str);
+  }
+
+  // Google Sheets format: "6/21/2026 17:29:53"
+  const parts = str.split(" ");
+  if (parts.length === 2) {
+    const datePart = parts[0];
+    const timePart = parts[1];
+
+    const d = new Date(datePart);
+    if (!isNaN(d)) {
+      return new Date(`${datePart} ${timePart}`);
+    }
+  }
+
+  return new Date(0);
 }
 
 /* ================= RENDER TABLE ================= */
@@ -31,6 +89,11 @@ function renderBookingList(list) {
 
   empty.style.display = "none";
 
+  /* 🔥 SORT BY TarikhMohon (NEWEST FIRST) */
+  list.sort((a, b) => {
+    return parseDateTime(b.tarikhMohon) - parseDateTime(a.tarikhMohon);
+  });
+
   list.forEach(b => {
     const row = document.createElement("tr");
 
@@ -39,7 +102,7 @@ function renderBookingList(list) {
       <td>${escapeHtml(b.kelas)}</td>
       <td>${escapeHtml(b.bilikNama)}</td>
       <td>${escapeHtml(b.tarikh)}</td>
-      <td>${escapeHtml(b.masa)}</td>
+      <td>${b.slots.join(", ")}</td>
       <td>${formatStatus(b.status)}</td>
     `;
 
@@ -59,7 +122,7 @@ function formatStatus(status) {
   return `<span class="status-pill ${cls}">${status}</span>`;
 }
 
-/* ================= SECURITY (basic HTML safety) ================= */
+/* ================= SECURITY ================= */
 
 function escapeHtml(str) {
   const div = document.createElement("div");
